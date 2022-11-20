@@ -149,5 +149,7 @@
     "share-addons-title": "Importálja és exportálja a kiegészítők YAML -fájlját",
     "share-addons-import": "Importálás",
     "share-addons-export": "Export",
-    "keybindings-enabled": "A billentyűzet -bekapcsolás engedélyezése"
+    "keybindings-enabled": "A billentyűzet -bekapcsolás engedélyezése",
+    "github-access-token": "GitHub Personal Access Token",
+    "paste-string-here": "Paste token here"
 }

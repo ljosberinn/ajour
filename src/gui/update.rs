@@ -137,6 +137,7 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
 
                     // Sets loading
                     ajour.state.insert(Mode::MyAddons(*flavor), State::Loading);
+                    let github_access_token = ajour.github_access_token_state.token.clone();
 
                     // Add commands
                     commands.push(Command::perform(
@@ -145,6 +146,7 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
                             ajour.fingerprint_cache.clone(),
                             addon_directory.clone(),
                             *flavor,
+                            github_access_token,
                         ),
                         Message::ParsedAddons,
                     ));
@@ -641,9 +643,11 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
                         .map(|a| a.repository().cloned())
                         .flatten()
                         .collect::<Vec<_>>();
+                    
+                    let github_access_token = ajour.github_access_token_state.token.clone();
 
                     commands.push(Command::perform(
-                        perform_batch_refresh_repository_packages(*flavor, repos),
+                        perform_batch_refresh_repository_packages(*flavor, repos, github_access_token),
                         Message::RepositoryPackagesFetched,
                     ));
                 }
@@ -1821,8 +1825,10 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
                 addon: None,
             });
 
+            let github_access_token = ajour.github_access_token_state.token.clone();
+
             return Ok(Command::perform(
-                perform_fetch_latest_addon(kind, id, flavor),
+                perform_fetch_latest_addon(kind, id, flavor, github_access_token),
                 Message::InstallAddonFetched,
             ));
         }
@@ -2545,9 +2551,22 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
 
             let _ = ajour.config.save();
         }
+
+        Message::Interaction(Interaction::GitHubTokenInput(token)) => {
+            ajour.github_access_token_state.token = token;
+        }
+
+        Message::Interaction(Interaction::GitHubSaveToken) => {
+            let token = ajour.github_access_token_state.token.clone();
+
+            ajour.config.github_access_token = token;
+            let _ = ajour.config.save();
+        }
+
         Message::Interaction(Interaction::ThemeUrlInput(url)) => {
             ajour.theme_state.input_url = url;
         }
+
         Message::Interaction(Interaction::ImportTheme) => {
             // Reset error
             ajour.error.take();
@@ -2695,10 +2714,11 @@ async fn perform_read_addon_directory(
     fingerprint_cache: Option<Arc<Mutex<FingerprintCache>>>,
     root_dir: PathBuf,
     flavor: Flavor,
+    github_access_token: String,
 ) -> (Flavor, Result<Vec<Addon>, ParseError>) {
     (
         flavor,
-        read_addon_directory(addon_cache, fingerprint_cache, root_dir, flavor).await,
+        read_addon_directory(addon_cache, fingerprint_cache, root_dir, flavor, github_access_token).await,
     )
 }
 
@@ -2758,11 +2778,13 @@ async fn perform_fetch_latest_addon(
     install_kind: InstallKind,
     id: String,
     flavor: Flavor,
+    github_access_token: String,
 ) -> (Flavor, String, Result<Addon, RepositoryError>) {
     async fn fetch_latest_addon(
         flavor: Flavor,
         install_kind: InstallKind,
         id: String,
+        github_access_token: String,
     ) -> Result<Addon, RepositoryError> {
         // Needed since id for source install is a URL and this id needs to be safe
         // when using as the temp path of the downloaded zip
@@ -2788,7 +2810,7 @@ async fn perform_fetch_latest_addon(
                     .parse::<Uri>()
                     .map_err(|_| RepositoryError::GitInvalidUrl { url: id.clone() })?;
 
-                RepositoryPackage::from_source_url(flavor, url)?
+                RepositoryPackage::from_source_url(flavor, url, github_access_token)?
             }
             InstallKind::Import { repo_kind } => {
                 RepositoryPackage::from_repo_id(flavor, repo_kind, id)?
@@ -2804,7 +2826,7 @@ async fn perform_fetch_latest_addon(
     (
         flavor,
         id.clone(),
-        fetch_latest_addon(flavor, install_kind, id).await,
+        fetch_latest_addon(flavor, install_kind, id, github_access_token).await,
     )
 }
 
@@ -2862,10 +2884,11 @@ async fn perform_fetch_changelog(
 async fn perform_batch_refresh_repository_packages(
     flavor: Flavor,
     repos: Vec<RepositoryPackage>,
+    github_access_token: String,
 ) -> (Flavor, Result<Vec<RepositoryPackage>, DownloadError>) {
     (
         flavor,
-        batch_refresh_repository_packages(flavor, &repos).await,
+        batch_refresh_repository_packages(flavor, &repos, github_access_token).await,
     )
 }
 

@@ -21,7 +21,7 @@ pub struct WowI {
 }
 
 #[async_trait]
-impl Backend for WowI {
+impl Backend for WowI {    
     async fn get_metadata(&self) -> Result<RepositoryMetadata, RepositoryError> {
         let packages = fetch_remote_packages(&[self.id.clone()]).await?;
 

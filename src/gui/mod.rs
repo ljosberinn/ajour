@@ -180,6 +180,8 @@ pub enum Interaction {
     CompressionLevelChanged(i32),
     ExportAddons,
     ImportAddons,
+    GitHubTokenInput(String),
+    GitHubSaveToken,
 }
 
 #[derive(Debug)]
@@ -285,6 +287,7 @@ pub struct Ajour {
     zstd_compression_level_slider_state: slider::State,
     share_state: ShareState,
     status_button_state: button::State,
+    github_access_token_state: GitHubAccessTokenState
 }
 
 impl Default for Ajour {
@@ -353,6 +356,7 @@ impl Default for Ajour {
             zstd_compression_level_slider_state: Default::default(),
             share_state: Default::default(),
             status_button_state: Default::default(),
+            github_access_token_state: Default::default(),
         }
     }
 }
@@ -1029,6 +1033,7 @@ impl Application for Ajour {
                     &mut self.localization_picklist_state,
                     &mut self.wow_directories,
                     &mut self.share_state,
+                    &mut self.github_access_token_state,
                 );
 
                 content = content.push(settings_container)
@@ -2040,6 +2045,24 @@ impl std::fmt::Display for CatalogSource {
     }
 }
 
+pub struct GitHubAccessTokenState {
+    token: String,
+    save_button_state: button::State,
+    input_state: text_input::State,
+}
+
+impl Default for GitHubAccessTokenState {
+    fn default() -> Self {
+        let token = "".to_string();
+
+        GitHubAccessTokenState { 
+            token,
+            save_button_state: Default::default(),
+            input_state: Default::default(),
+        }
+    }
+}
+
 pub struct ThemeState {
     themes: Vec<(String, Theme)>,
     current_theme_name: String,
@@ -2535,8 +2558,8 @@ fn apply_config(ajour: &mut Ajour, mut config: Config) {
             // No sorting on Aura columns currently
         }
     }
-
-    // Use theme from config. Set to "Dark" if not defined.
+    
+        // Use theme from config. Set to "Dark" if not defined.
     ajour.theme_state.current_theme_name = config.theme.as_deref().unwrap_or("Dark").to_string();
 
     // Use scale from config. Set to 1.0 if not defined.
@@ -2558,6 +2581,8 @@ fn apply_config(ajour: &mut Ajour, mut config: Config) {
 
     // Set the inital mode flavor
     ajour.mode = Mode::MyAddons(config.wow.flavor);
+
+    ajour.github_access_token_state.token = config.github_access_token.clone();
 
     ajour.config = config;
 

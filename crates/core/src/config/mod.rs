@@ -92,6 +92,9 @@ pub struct Config {
     #[serde(default)]
     #[cfg(target_os = "windows")]
     pub start_closed_to_tray: bool,
+
+    #[serde(default)]
+    pub github_access_token: String,
 }
 
 impl Config {
@@ -159,7 +162,7 @@ impl Config {
         self.get_directory_for_flavor(flavor, "Screenshots", true)
     }
 
-    /// Return a `Option<PathBuf` to a directory.
+    /// Return a `Option<PathBuf>` to a directory.
     /// This will return none if no `wow_directory` is set in the config.
     fn get_directory_for_flavor(
         &self,

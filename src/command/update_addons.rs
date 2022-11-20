@@ -51,6 +51,7 @@ pub fn update_all_addons() -> Result<()> {
                 Some(fingerprint_cache.clone()),
                 &addon_directory,
                 *flavor,
+                config.github_access_token.clone(),
             )
             .await
             {

@@ -2,6 +2,8 @@
 
 use ajour_core::{config::Flavor, repository::CompressionFormat};
 
+use crate::gui::GitHubAccessTokenState;
+
 use {
     super::{DEFAULT_FONT_SIZE, DEFAULT_HEADER_FONT_SIZE, DEFAULT_PADDING},
     crate::gui::{
@@ -41,6 +43,7 @@ pub fn data_container<'a, 'b>(
     localization_picklist_state: &'a mut pick_list::State<Language>,
     wow_directories: &'a mut Vec<WowDirectoryState>,
     share_state: &'a mut ShareState,
+    github_access_token_state: &'a mut GitHubAccessTokenState
 ) -> Container<'a, Message> {
     let mut scrollable = Scrollable::new(scrollable_state)
         .spacing(1)
@@ -206,6 +209,46 @@ pub fn data_container<'a, 'b>(
             .push(title_container)
             .push(Space::new(Length::Units(0), Length::Units(5)))
             .push(theme_input_row)
+    };
+
+    let github_access_token_column = {
+        let title_container =
+            Container::new(Text::new(localized_string("github-access-token")).size(DEFAULT_FONT_SIZE))
+                .style(style::NormalBackgroundContainer(color_palette));
+
+        let token_input = TextInput::new(
+            &mut github_access_token_state.input_state,
+            &localized_string("paste-string-here"),
+            &github_access_token_state.token,
+            Interaction::GitHubTokenInput,
+        )
+        .size(DEFAULT_FONT_SIZE)
+        .padding(6)
+        .width(Length::Units(185))
+        .style(style::AddonsQueryInput(color_palette));
+
+        let token_input: Element<Interaction> = token_input.into();
+
+        let save_button = Button::new(
+            &mut github_access_token_state.save_button_state,
+            Text::new(localized_string("save")).size(DEFAULT_FONT_SIZE),
+        )
+        .style(style::DefaultBoxedButton(color_palette))
+        .on_press(Interaction::GitHubSaveToken);
+
+        let save_button: Element<Interaction> = save_button.into();
+
+        let token_input_row = Row::new()
+            .push(token_input.map(Message::Interaction))
+            .push(save_button.map(Message::Interaction))
+            .spacing(DEFAULT_PADDING)
+            .align_items(Align::Center)
+            .height(Length::Units(26));
+
+        Column::new()
+            .push(title_container)
+            .push(Space::new(Length::Units(0), Length::Units(5)))
+            .push(token_input_row)
     };
 
     let open_theme_row = {
@@ -868,6 +911,8 @@ pub fn data_container<'a, 'b>(
         .push(alternate_row_color_column)
         .push(Space::new(Length::Units(0), Length::Units(10)))
         .push(self_update_channel_container)
+        .push(Space::new(Length::Units(0), Length::Units(10)))
+        .push(github_access_token_column)
         .push(Space::new(Length::Units(0), Length::Units(10)))
         .push(config_column)
         .push(Space::new(Length::Units(0), Length::Units(10)))

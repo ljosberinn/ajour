@@ -34,6 +34,7 @@ pub struct ReleaseFile {
 pub(crate) async fn batch_fetch_repo_packages(
     flavor: Flavor,
     git_urls: &[String],
+    github_access_token: String
 ) -> Result<Vec<RepositoryPackage>, DownloadError> {
     let mut git_repo_packages = vec![];
 
@@ -41,14 +42,16 @@ pub(crate) async fn batch_fetch_repo_packages(
         return Ok(git_repo_packages);
     }
 
+
     let fetch_tasks = git_urls
         .iter()
         .map(|url| {
             let url = url
                 .parse::<Uri>()
                 .map_err(|_| RepositoryError::GitInvalidUrl { url: url.clone() })?;
+                let github_token = github_access_token.clone();
 
-            RepositoryPackage::from_source_url(flavor, url)
+            RepositoryPackage::from_source_url(flavor, url, github_token)
         })
         .filter_map(|result| match result {
             Ok(package) => Some(package),
@@ -95,6 +98,7 @@ mod github {
     pub struct Github {
         pub url: Uri,
         pub flavor: Flavor,
+        pub token: String,
     }
 
     #[async_trait]
@@ -112,8 +116,19 @@ mod github {
             })?;
 
             let url = format!("https://api.github.com/repos/{}/{}/releases", author, repo);
+           
+            let mut headers = vec![];
+            let bearer = &*("Bearer ".to_owned() + &self.token.clone());
 
-            let mut resp = request_async(&url, vec![], None).await?;
+            if !self.token.is_empty() {
+                let accept_header = ("Accept", "application/vnd.github+json");
+                headers.push(accept_header);
+
+                let authorization_header = ("Authorization", bearer);
+                headers.push(authorization_header);
+            }
+
+            let mut resp = request_async(&url, headers, None).await?;
 
             let releases: Vec<Release> = resp
                 .json()

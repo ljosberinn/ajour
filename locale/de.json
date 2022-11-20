@@ -149,5 +149,7 @@
     "share-addons-title": "Importieren und exportieren Sie eine YAML-Datei Ihrer Addons",
     "share-addons-import": "Importieren",
     "share-addons-export": "Export",
-    "keybindings-enabled": "Tastenkombinationen aktivieren"
+    "keybindings-enabled": "Tastenkombinationen aktivieren",
+    "github-access-token": "GitHub Personal Access Token",
+    "paste-string-here": "Token hier einfügen"
 }

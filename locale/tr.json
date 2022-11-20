@@ -149,5 +149,7 @@
     "share-addons-title": "Eklentilerinizin bir YAML dosyasını içe ve dışa aktarın",
     "share-addons-import": "İçe aktarmak",
     "share-addons-export": "İhracat",
-    "keybindings-enabled": "Tuş bağlamaları etkinleştir"
+    "keybindings-enabled": "Tuş bağlamaları etkinleştir",
+    "github-access-token": "GitHub Personal Access Token",
+    "paste-string-here": "Paste token here"
 }

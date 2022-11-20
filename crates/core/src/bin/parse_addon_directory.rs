@@ -1,4 +1,5 @@
-use ajour_core::cache::load_addon_cache;
+use ajour_core::error::FilesystemError;
+use ajour_core::{cache::load_addon_cache, config::load_config};
 use ajour_core::config::Flavor;
 use ajour_core::parse::read_addon_directory;
 
@@ -53,12 +54,16 @@ fn main() {
 
     task::block_on(async move {
         let addon_cache = Some(Arc::new(Mutex::new(load_addon_cache().await.unwrap())));
+        let config = load_config().await?;
 
         let addons =
-            read_addon_directory(addon_cache, fingerprint_cache, &path, Flavor::ClassicTbc)
+            read_addon_directory(addon_cache, fingerprint_cache, &path, Flavor::ClassicTbc, config.github_access_token)
                 .await
                 .unwrap();
 
         print!("{} addons parsed", addons.len());
+
+        Result::Ok::<bool, FilesystemError>(true)
     });
+    
 }

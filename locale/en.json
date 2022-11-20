@@ -149,5 +149,7 @@
     "share-addons-title": "Import and Export a YAML file of your addons",
     "share-addons-import": "Import",
     "share-addons-export": "Export",
-    "keybindings-enabled": "Enable keybindings"
+    "keybindings-enabled": "Enable keybindings",
+    "github-access-token": "GitHub Personal Access Token",
+    "paste-string-here": "Paste token here"
 }

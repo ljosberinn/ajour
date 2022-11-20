@@ -14,6 +14,10 @@ and `Removed`.
 
 ## [Unreleased]
 
+## [1.3.3] - 2022-11-20
+
+- added option to add GitHub Personal Access Token
+
 ## [1.3.2] - 2021-09-23
 
 ### Added

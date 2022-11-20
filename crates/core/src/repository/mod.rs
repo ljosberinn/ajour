@@ -76,7 +76,7 @@ impl std::fmt::Debug for RepositoryPackage {
 }
 
 impl RepositoryPackage {
-    pub fn from_source_url(flavor: Flavor, url: Uri) -> Result<Self, RepositoryError> {
+    pub fn from_source_url(flavor: Flavor, url: Uri, github_access_token: String) -> Result<Self, RepositoryError> {
         let host = url.host().ok_or(RepositoryError::GitMissingHost {
             url: url.to_string(),
         })?;
@@ -86,6 +86,7 @@ impl RepositoryPackage {
                 Box::new(Github {
                     url: url.clone(),
                     flavor,
+                    token: github_access_token,
                 }),
                 RepositoryKind::Git(GitKind::Github),
             ),
@@ -407,6 +408,7 @@ pub struct Changelog {
 pub async fn batch_refresh_repository_packages(
     flavor: Flavor,
     repos: &[RepositoryPackage],
+    github_access_token: String,
 ) -> Result<Vec<RepositoryPackage>, DownloadError> {
     let curse_ids = repos
         .iter()
@@ -448,7 +450,7 @@ pub async fn batch_refresh_repository_packages(
     let hub_repo_packages = hub::batch_fetch_repo_packages(flavor, &hub_ids).await?;
 
     // Get all git repo packages
-    let git_repo_packages = git::batch_fetch_repo_packages(flavor, &git_urls).await?;
+    let git_repo_packages = git::batch_fetch_repo_packages(flavor, &git_urls, github_access_token).await?;
 
     Ok([
         &curse_repo_packages[..],

@@ -40,6 +40,7 @@ pub async fn read_addon_directory<P: AsRef<Path>>(
     fingerprint_cache: Option<Arc<Mutex<FingerprintCache>>>,
     root_dir: P,
     flavor: Flavor,
+    github_access_token: String,
 ) -> Result<Vec<Addon>, ParseError> {
     log::debug!("{} - parsing addons folder", flavor);
 
@@ -125,7 +126,7 @@ pub async fn read_addon_directory<P: AsRef<Path>>(
 
     // Gets all unique repository packages from the cached ids, toc ids, and fingerprint exact / partial matches
     let mut all_repo_packages =
-        get_all_repo_packages(flavor, &cache_entries, &addon_folders, &fingerprint_info).await?;
+        get_all_repo_packages(flavor, &cache_entries, &addon_folders, &fingerprint_info, github_access_token).await?;
 
     // Build addons with repo packages & addon folders
     let known_addons = build_addons(
@@ -454,6 +455,7 @@ async fn get_all_repo_packages(
     cache_entries: &[AddonCacheEntry],
     addon_folders: &[AddonFolder],
     fingerprint_info: &curse::FingerprintInfo,
+    github_access_token: String,
 ) -> Result<Vec<RepositoryPackage>, DownloadError> {
     let mut curse_ids = vec![];
     let mut tukui_ids = vec![];
@@ -596,7 +598,7 @@ async fn get_all_repo_packages(
     };
 
     // Get all git repo packages
-    let git_repo_packages_result = git::batch_fetch_repo_packages(flavor, &git_urls).await;
+    let git_repo_packages_result = git::batch_fetch_repo_packages(flavor, &git_urls, github_access_token).await;
     let git_repo_packages = match git_repo_packages_result {
         Ok(packages) => {
             log::debug!("{} - {} git packages fetched", flavor, packages.len());
