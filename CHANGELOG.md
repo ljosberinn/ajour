@@ -14,6 +14,10 @@ and `Removed`.
 
 ## [Unreleased]
 
+## [1.3.4] -- 2022-12-31
+
+- consider `-bc` also to be a Burning Crusade (Classic) release
+
 ## [1.3.3] - 2022-11-20
 
 ### Added

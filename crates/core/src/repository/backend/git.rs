@@ -284,6 +284,7 @@ mod github {
                     && !a.name.to_lowercase().contains("vanilla")
                     && !a.name.to_lowercase().contains("bcc")
                     && !a.name.to_lowercase().contains("tbc")
+                    && !a.name.to_lowercase().contains("bc")
             }
             Flavor::ClassicEra => {
                 a.name.ends_with("zip")
@@ -291,13 +292,15 @@ mod github {
                         || a.name.to_lowercase().contains("vanilla"))
                     && !a.name.to_lowercase().contains("bcc")
                     && !a.name.to_lowercase().contains("tbc")
+                    && !a.name.to_lowercase().contains("bc")
             }
             Flavor::ClassicTbc => {
                 a.name.ends_with("zip")
                     && !a.name.to_lowercase().contains("classic")
                     && !a.name.to_lowercase().contains("vanilla")
                     && (a.name.to_lowercase().contains("bcc")
-                        || a.name.to_lowercase().contains("tbc"))
+                    || a.name.to_lowercase().contains("tbc")
+                    || a.name.to_lowercase().contains("bc"))
             }
             _ => a.name.ends_with("zip"),
         });
